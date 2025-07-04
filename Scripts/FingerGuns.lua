@@ -2,11 +2,14 @@ dofile( "$GAME_DATA/Scripts/game/AnimationUtil.lua" )
 dofile( "$SURVIVAL_DATA/Scripts/util.lua" )
 dofile( "$SURVIVAL_DATA/Scripts/game/survival_projectiles.lua" )
 
-
 ---@class FingerGuns : ToolClass
 ---@field tpAnimations table
 ---@field fpAnimations table
 FingerGuns = class()
+
+local vec3_up = sm.vec3.new( 0, 0, 1 )
+local vec3_zero = sm.vec3.new( 0.0, 0.0, 0.0 )
+local camOffsetTp = sm.vec3.new( 0.65, 0.0, 0.05 )
 
 local renderablesTp = {
     "$CONTENT_DATA/Tools/char_fingergun_tp.rend"
@@ -29,9 +32,8 @@ function FingerGuns:client_onCreate()
 end
 
 function FingerGuns.client_onUpdate( self, dt )
-
-	local isSprinting =  self.tool:isSprinting()
-	local isCrouching =  self.tool:isCrouching()
+	local isSprinting = self.tool:isSprinting()
+	local isCrouching = self.tool:isCrouching()
 
 	if self.isLocal then
 		updateFpAnimations( self.fpAnimations, self.equipped, dt )
@@ -45,26 +47,16 @@ function FingerGuns.client_onUpdate( self, dt )
 		return
 	end
 
-	local effectPos, rot
     local bone = self:getFingerBone()
+	local dir = sm.localPlayer.getDirection()
+	local rot = sm.vec3.getRotation( vec3_up, dir )
 	if self.isLocal then
-		local dir = sm.localPlayer.getDirection()
-		local firePos = self.tool:getFpBonePos( bone )
-
-        effectPos = firePos + dir * 0.2
-		rot = sm.vec3.getRotation( sm.vec3.new( 0, 0, 1 ), dir )
-
-		self.shootEffectFP:setPosition( effectPos )
+		self.shootEffectFP:setPosition( self.tool:getFpBonePos( bone ) + dir * 0.2 )
 		self.shootEffectFP:setVelocity( self.tool:getMovementVelocity() )
-		self.shootEffectFP:setRotation( rot )
+		self.shootEffectFP:setRotation( rot)
 	end
 
-	local pos = self.tool:getTpBonePos( bone )
-	local dir = self.tool:getDirection()
-	effectPos = pos + dir * 0.2
-	rot = sm.vec3.getRotation( sm.vec3.new( 0, 0, 1 ), dir )
-
-	self.shootEffect:setPosition( effectPos )
+	self.shootEffect:setPosition( self.tool:getTpBonePos( bone ) + dir * 0.2 )
 	self.shootEffect:setVelocity( self.tool:getMovementVelocity() )
 	self.shootEffect:setRotation( rot )
 
@@ -107,9 +99,9 @@ function FingerGuns.client_onUpdate( self, dt )
 	self.tool:setBlockSprint( blockSprint )
 
 	local playerDir = self.tool:getSmoothDirection()
-	local angle = math.asin( playerDir:dot( sm.vec3.new( 0, 0, 1 ) ) ) / ( math.pi / 2 )
+	local angle = math.asin( playerDir:dot( vec3_up ) ) / ( math.pi / 2 )
 
-	local crouchWeight = self.tool:isCrouching() and 1.0 or 0.0
+	local crouchWeight = isCrouching and 1.0 or 0.0
 	local normalWeight = 1.0 - crouchWeight
 
 	local totalWeight = 0.0
@@ -146,7 +138,7 @@ function FingerGuns.client_onUpdate( self, dt )
 
 	-- Third Person joint lock
 	local relativeMoveDirection = self.tool:getRelativeMoveDirection()
-	if ( ( ( isAnyOf( self.tpAnimations.currentAnimation, { "aimInto", "aim", "shoot" } ) and ( relativeMoveDirection:length() > 0 or isCrouching) ) or ( --[[self.aiming and]] ( relativeMoveDirection:length() > 0 or isCrouching) ) ) and not isSprinting ) then
+	if ( relativeMoveDirection:length() > 0 or isCrouching) and not isSprinting then
 		self.jointWeight = math.min( self.jointWeight + ( 10.0 * dt ), 1.0 )
 	else
 		self.jointWeight = math.max( self.jointWeight - ( 6.0 * dt ), 0.0 )
@@ -158,8 +150,7 @@ function FingerGuns.client_onUpdate( self, dt )
 		self.spineWeight = math.max( self.spineWeight - ( 10.0 * dt ), 0.0 )
 	end
 
-	local finalAngle = ( 0.5 + angle * 0.5 )
-	self.tool:updateAnimation( "spine_bend", 1 - finalAngle, self.spineWeight )
+	self.tool:updateAnimation( "spine_bend", 1 - ( 0.5 + angle * 0.5 ), self.spineWeight )
 
 	local totalOffsetZ = lerp( -22.0, -26.0, crouchWeight )
 	local totalOffsetY = lerp( 6.0, 12.0, crouchWeight )
@@ -176,9 +167,8 @@ function FingerGuns.client_onUpdate( self, dt )
 	self.tool:updateJoint( "jnt_spine3", sm.vec3.new( totalOffsetX, totalOffsetY, totalOffsetZ ), ( 0.45 + crouchSpineWeight ) * finalJointWeight )
 	self.tool:updateJoint( "jnt_head", sm.vec3.new( totalOffsetX, totalOffsetY, totalOffsetZ ), 0.3 * finalJointWeight )
 
-
-	self.tool:updateCamera( 2.8, 30.0, sm.vec3.new( 0.65, 0.0, 0.05 ), 0 )
-	self.tool:updateFpCamera( 30.0, sm.vec3.new( 0.0, 0.0, 0.0 ), 0, 1 )
+	self.tool:updateCamera( 2.8, 30.0, camOffsetTp, 0 )
+	self.tool:updateFpCamera( 30.0, vec3_zero, 0, 1 )
 end
 
 function FingerGuns:client_onEquip()
@@ -418,23 +408,10 @@ function FingerGuns:loadAnimations()
 
 	local movementAnimations = {
 		idle = "fingergun_idle",
-		-- idleRelaxed = "fingergun_relax",
 
 		sprint = "fingergun_sprint",
 		runFwd = "fingergun_run_fwd",
 		runBwd = "fingergun_run_bwd",
-
-		-- jump = "fingergun_jump",
-		-- jumpUp = "fingergun_jump_up",
-		-- jumpDown = "fingergun_jump_down",
-
-		-- land = "fingergun_jump_land",
-		-- landFwd = "fingergun_jump_land_fwd",
-		-- landBwd = "fingergun_jump_land_bwd",
-
-		-- crouchIdle = "fingergun_crouch_idle",
-		-- crouchFwd = "fingergun_crouch_fwd",
-		-- crouchBwd = "fingergun_crouch_bwd"
 	}
 
 	for name, animation in pairs( movementAnimations ) do

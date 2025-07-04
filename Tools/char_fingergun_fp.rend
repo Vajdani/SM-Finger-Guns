@@ -1,7 +1,6 @@
 {
 	"lodList": [{
 		"animationList" : [	
-			{ "name": "fingergun_spine_bend", 			"file": "$GAME_DATA/Character/Char_Male/Animations/Thirdperson/Posetarget/ani_posetarget_spudgun_spine_bend.dae" },
 			{ "name": "fingergun_idle", 				"file": "$CONTENT_DATA/Tools/char_fingerguns_fp_idle.dae", 	"looping": true },
 
 			{ "name": "fingergun_shootleft", 				"file": "$CONTENT_DATA/Tools/char_fingerguns_fp_shootleft.dae" },
