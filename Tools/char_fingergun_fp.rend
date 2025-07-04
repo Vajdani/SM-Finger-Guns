@@ -1,0 +1,15 @@
+{
+	"lodList": [{
+		"animationList" : [	
+			{ "name": "fingergun_spine_bend", 			"file": "$GAME_DATA/Character/Char_Male/Animations/Thirdperson/Posetarget/ani_posetarget_spudgun_spine_bend.dae" },
+			{ "name": "fingergun_idle", 				"file": "$CONTENT_DATA/Tools/char_fingerguns_fp_idle.dae", 	"looping": true },
+
+			{ "name": "fingergun_shootleft", 				"file": "$CONTENT_DATA/Tools/char_fingerguns_fp_shootleft.dae" },
+			{ "name": "fingergun_shootright", 				"file": "$CONTENT_DATA/Tools/char_fingerguns_fp_shootright.dae" },
+
+			{ "name": "fingergun_equip", 				"file": "$CONTENT_DATA/Tools/char_fingerguns_fp_equip.dae" },
+			{ "name": "fingergun_unequip", 				"file": "$CONTENT_DATA/Tools/char_fingerguns_fp_unequip.dae" }
+		],
+		"maxViewDistance": 1000.0
+	}]
+}

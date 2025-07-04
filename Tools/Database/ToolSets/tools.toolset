@@ -1,0 +1,14 @@
+{
+    "toolList": [
+        {
+            "name": "tool_fingerguns",
+            "previewRenderable": "$GAME_DATA/Character/Char_Tools/char_lift_preview.rend",
+            "script": {
+                "class": "FingerGuns",
+                "data": {},
+                "file": "$CONTENT_DATA/Scripts/FingerGuns.lua"
+            },
+            "uuid": "851de44d-bb2f-4e2d-9a3c-27dc3946c65f"
+        }
+    ]
+}
